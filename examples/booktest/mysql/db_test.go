@@ -5,6 +5,7 @@ package booktest
 import (
 	"context"
 	"database/sql"
+	"slices"
 	"testing"
 	"time"
 
@@ -155,7 +156,9 @@ func TestBooks(t *testing.T) {
 		Title: "my book title",
 		Yr:    2016,
 	})
-	for book := range rows.Iterate() {
+
+	// We need to collect the iterator elements to avoid panic when we make other db queries in the loop.
+	for _, book := range slices.Collect(rows.Iterate()) {
 		t.Logf("Book %d (%s): %s available: %s\n", book.BookID, book.BookType, book.Title, book.Available.Format(time.RFC822Z))
 		author, err := dq.GetAuthor(ctx, book.AuthorID)
 		if err != nil {
