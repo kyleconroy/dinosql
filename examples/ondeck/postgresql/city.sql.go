@@ -74,6 +74,8 @@ func (r *IterCitiesRows) Iterate() iter.Seq[City] {
 	}
 
 	return func(yield func(City) bool) {
+		defer r.rows.Close()
+
 		for r.rows.Next() {
 			var i City
 			err := r.rows.Scan(&i.Slug, &i.Name)
@@ -83,9 +85,7 @@ func (r *IterCitiesRows) Iterate() iter.Seq[City] {
 			}
 
 			if !yield(i) {
-				if err = r.rows.Close(); err != nil {
-					r.err = err
-				}
+				r.err = r.rows.Close()
 				return
 			}
 		}

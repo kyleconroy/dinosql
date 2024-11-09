@@ -85,6 +85,8 @@ func (r *{{.MethodName}}Rows) Iterate() iter.Seq[{{.Ret.DefineType}}] {
 	}
 
 	return func(yield func({{.Ret.DefineType}}) bool) {
+		defer r.rows.Close()
+
 		for r.rows.Next() {
 			var {{.Ret.Name}} {{.Ret.Type}}
 			err := r.rows.Scan({{.Ret.Scan}})
@@ -94,9 +96,7 @@ func (r *{{.MethodName}}Rows) Iterate() iter.Seq[{{.Ret.DefineType}}] {
 			}
 
 			if !yield({{.Ret.ReturnName}}) {
-				if err = r.rows.Close(); err != nil {
-					r.err = err
-				}
+			    r.err = r.rows.Close()
 				return
 			}
 		}

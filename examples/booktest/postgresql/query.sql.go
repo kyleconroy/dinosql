@@ -237,6 +237,8 @@ func (r *IterBooksByTitleYearRows) Iterate() iter.Seq[Book] {
 	}
 
 	return func(yield func(Book) bool) {
+		defer r.rows.Close()
+
 		for r.rows.Next() {
 			var i Book
 			err := r.rows.Scan(
@@ -255,7 +257,6 @@ func (r *IterBooksByTitleYearRows) Iterate() iter.Seq[Book] {
 			}
 
 			if !yield(i) {
-				r.rows.Close()
 				return
 			}
 		}

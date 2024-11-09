@@ -125,6 +125,8 @@ func (r *IterVenuesRows) Iterate() iter.Seq[Venue] {
 	}
 
 	return func(yield func(Venue) bool) {
+		defer r.rows.Close()
+
 		for r.rows.Next() {
 			var i Venue
 			err := r.rows.Scan(
@@ -145,9 +147,7 @@ func (r *IterVenuesRows) Iterate() iter.Seq[Venue] {
 			}
 
 			if !yield(i) {
-				if err = r.rows.Close(); err != nil {
-					r.err = err
-				}
+				r.err = r.rows.Close()
 				return
 			}
 		}

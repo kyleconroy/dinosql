@@ -55,6 +55,8 @@ func (r *IterPilotsRows) Iterate() iter.Seq[Pilot] {
 	}
 
 	return func(yield func(Pilot) bool) {
+		defer r.rows.Close()
+
 		for r.rows.Next() {
 			var i Pilot
 			err := r.rows.Scan(&i.ID, &i.Name)
@@ -64,7 +66,6 @@ func (r *IterPilotsRows) Iterate() iter.Seq[Pilot] {
 			}
 
 			if !yield(i) {
-				r.rows.Close()
 				return
 			}
 		}

@@ -74,6 +74,8 @@ func (r *IterAuthorsRows) Iterate() iter.Seq[Author] {
 	}
 
 	return func(yield func(Author) bool) {
+		defer r.rows.Close()
+
 		for r.rows.Next() {
 			var i Author
 			err := r.rows.Scan(&i.ID, &i.Name, &i.Bio)
@@ -83,9 +85,7 @@ func (r *IterAuthorsRows) Iterate() iter.Seq[Author] {
 			}
 
 			if !yield(i) {
-				if err = r.rows.Close(); err != nil {
-					r.err = err
-				}
+				r.err = r.rows.Close()
 				return
 			}
 		}

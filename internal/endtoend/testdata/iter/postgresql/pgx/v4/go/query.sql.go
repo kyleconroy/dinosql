@@ -38,6 +38,8 @@ func (r *IterValuesRows) Iterate() iter.Seq[MyschemaFoo] {
 	}
 
 	return func(yield func(MyschemaFoo) bool) {
+		defer r.rows.Close()
+
 		for r.rows.Next() {
 			var i MyschemaFoo
 			err := r.rows.Scan(&i.A, &i.B)
@@ -47,7 +49,6 @@ func (r *IterValuesRows) Iterate() iter.Seq[MyschemaFoo] {
 			}
 
 			if !yield(i) {
-				r.rows.Close()
 				return
 			}
 		}

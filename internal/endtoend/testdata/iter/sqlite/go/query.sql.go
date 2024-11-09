@@ -36,6 +36,8 @@ func (r *IterValuesRows) Iterate() iter.Seq[Foo] {
 	}
 
 	return func(yield func(Foo) bool) {
+		defer r.rows.Close()
+
 		for r.rows.Next() {
 			var i Foo
 			err := r.rows.Scan(&i.A, &i.B)
@@ -45,9 +47,7 @@ func (r *IterValuesRows) Iterate() iter.Seq[Foo] {
 			}
 
 			if !yield(i) {
-				if err = r.rows.Close(); err != nil {
-					r.err = err
-				}
+				r.err = r.rows.Close()
 				return
 			}
 		}
