@@ -4,6 +4,7 @@ package booktest
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 
@@ -136,6 +137,25 @@ func TestBooks(t *testing.T) {
 			t.Fatal(err)
 		}
 		t.Logf("Book %d author: %s\n", book.BookID, author.Name)
+	}
+
+	// retrieve first book
+	rows := dq.IterBooksByTitleYear(ctx, IterBooksByTitleYearParams{
+		Title: "my book title",
+		Yr:    2016,
+	})
+
+	// We need to collect the iterator elements to avoid panic when we make other db queries in the loop.
+	for _, book := range slices.Collect(rows.Iterate()) {
+		t.Logf("Book %d (%s): %s available: %s\n", book.BookID, book.BookType, book.Title, book.Available.Format(time.RFC822Z))
+		author, err := dq.GetAuthor(ctx, book.AuthorID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("Book %d author: %s\n", book.BookID, author.Name)
+	}
+	if err = rows.Err(); err != nil {
+		t.Fatal(err)
 	}
 
 	// find a book with either "cool" or "other" or "someother" tag
